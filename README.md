@@ -1,6 +1,6 @@
 # monkey-interpreter
  
-# Learn to Build an Interpreter with Go
+# Build an Interpreter with Go
 
 - Understand how interpreters work.
 - Develop a basic interpreter step by step.
