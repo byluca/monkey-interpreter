@@ -35,6 +35,7 @@ func newToken(tokenType token.TokenType, ch byte) token.Token {
 // NextToken genera il prossimo token basato sul carattere corrente nel lexer.
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
+	l.skipWhitespace() // Salta gli spazi bianchi prima di determinare il prossimo token.
 
 	switch l.ch {
 	case '=':
@@ -53,12 +54,54 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.LBRACE, l.ch)
 	case '}':
 		tok = newToken(token.RBRACE, l.ch)
-	case 0: // Considera '0' come segnale di fine file
+	case 0:
 		tok = token.Token{Type: token.EOF, Literal: ""}
-	default: // Gestisci qualsiasi carattere non riconosciuto come illegale
-		tok = newToken(token.ILLEGAL, l.ch)
+	default:
+		if isLetter(l.ch) {
+			tok.Literal = l.readIdentifier()
+			tok.Type = token.LookupIdent(tok.Literal) // Dopo aver letto un identificatore, verifica se è una parola chiave.
+			return tok
+		} else if isDigit(l.ch) {
+			tok.Literal = l.readNumber()
+			tok.Type = token.INT
+			return tok
+		} else {
+			tok = newToken(token.ILLEGAL, l.ch)
+		}
 	}
 
 	l.readChar() // Leggi il prossimo carattere prima di ritornare il token
 	return tok
+}
+
+func (l *Lexer) readIdentifier() string {
+	position := l.position
+	for isLetter(l.ch) {
+		l.readChar()
+	}
+	return l.input[position:l.position]
+}
+
+func (l *Lexer) readNumber() string {
+
+	position := l.position
+	for isDigit(l.ch) {
+		l.readChar()
+	}
+	return l.input[position:l.position]
+}
+
+// skipWhitespace salta gli spazi bianchi nel testo di input finché non trova un carattere significativo.
+func (l *Lexer) skipWhitespace() {
+	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
+		l.readChar()
+	}
+}
+
+func isLetter(ch byte) bool {
+	return ('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') || ch == '_'
+}
+
+func isDigit(ch byte) bool {
+	return '0' <= ch && ch <= '9'
 }
