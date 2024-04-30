@@ -32,14 +32,19 @@ func newToken(tokenType token.TokenType, ch byte) token.Token {
 	return token.Token{Type: tokenType, Literal: string(ch)}
 }
 
-// NextToken genera il prossimo token basato sul carattere corrente nel lexer.
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
-	l.skipWhitespace() // Salta gli spazi bianchi prima di determinare il prossimo token.
+	l.skipWhitespace() // Skip whitespace to determine the next token.
 
 	switch l.ch {
 	case '=':
-		tok = newToken(token.ASSIGN, l.ch)
+		if l.peekChar() == '=' {
+			ch := l.ch
+			l.readChar() // Move to next char to complete the '=='
+			tok = token.Token{Type: token.EQ, Literal: string(ch) + string(l.ch)}
+		} else {
+			tok = newToken(token.ASSIGN, l.ch)
+		}
 	case ';':
 		tok = newToken(token.SEMICOLON, l.ch)
 	case '(':
@@ -50,16 +55,46 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.COMMA, l.ch)
 	case '+':
 		tok = newToken(token.PLUS, l.ch)
+	case '-':
+		tok = newToken(token.DASH, l.ch)
+	case '*':
+		tok = newToken(token.STAR, l.ch)
+	case '/':
+		tok = newToken(token.FORWARDSLASH, l.ch)
+	case '<':
+		if l.peekChar() == '=' {
+			ch := l.ch
+			l.readChar() // Move to next char to complete the '<='
+			tok = token.Token{Type: token.LT_EQ, Literal: string(ch) + string(l.ch)}
+		} else {
+			tok = newToken(token.LT, l.ch)
+		}
+	case '>':
+		if l.peekChar() == '=' {
+			ch := l.ch
+			l.readChar() // Move to next char to complete the '>='
+			tok = token.Token{Type: token.GT_EQ, Literal: string(ch) + string(l.ch)}
+		} else {
+			tok = newToken(token.GT, l.ch)
+		}
 	case '{':
 		tok = newToken(token.LBRACE, l.ch)
 	case '}':
 		tok = newToken(token.RBRACE, l.ch)
+	case '!':
+		if l.peekChar() == '=' {
+			ch := l.ch
+			l.readChar() // Move to next char to complete the '!='
+			tok = token.Token{Type: token.NOT_EQ, Literal: string(ch) + string(l.ch)}
+		} else {
+			tok = newToken(token.BANG, l.ch)
+		}
 	case 0:
 		tok = token.Token{Type: token.EOF, Literal: ""}
 	default:
 		if isLetter(l.ch) {
 			tok.Literal = l.readIdentifier()
-			tok.Type = token.LookupIdent(tok.Literal) // Dopo aver letto un identificatore, verifica se è una parola chiave.
+			tok.Type = token.LookupIdent(tok.Literal) // Verify if it's a keyword after reading an identifier.
 			return tok
 		} else if isDigit(l.ch) {
 			tok.Literal = l.readNumber()
@@ -70,7 +105,7 @@ func (l *Lexer) NextToken() token.Token {
 		}
 	}
 
-	l.readChar() // Leggi il prossimo carattere prima di ritornare il token
+	l.readChar() // Read next character before returning the token
 	return tok
 }
 
@@ -104,4 +139,13 @@ func isLetter(ch byte) bool {
 
 func isDigit(ch byte) bool {
 	return '0' <= ch && ch <= '9'
+}
+
+// peekChar restituisce il prossimo carattere nell'input senza avanzare la posizione del lexer.
+func (l *Lexer) peekChar() byte {
+	if l.readPosition >= len(l.input) {
+		return 0 // ASCII NUL (0x00) usato come EOF
+	} else {
+		return l.input[l.readPosition]
+	}
 }
