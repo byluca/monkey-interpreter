@@ -39,9 +39,8 @@ func (l *Lexer) NextToken() token.Token {
 	switch l.ch {
 	case '=':
 		if l.peekChar() == '=' {
-			ch := l.ch
-			l.readChar() // Move to next char to complete the '=='
-			tok = token.Token{Type: token.EQ, Literal: string(ch) + string(l.ch)}
+			l.readChar()
+			tok = newToken(token.EQ, l.ch)
 		} else {
 			tok = newToken(token.ASSIGN, l.ch)
 		}
