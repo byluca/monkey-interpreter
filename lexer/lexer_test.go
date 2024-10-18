@@ -5,6 +5,7 @@ import (
 	"testing"
 )
 
+// TestConditionals testa il lexer con varie espressioni condizionali e operatori.
 func TestConditionals(t *testing.T) {
 	input := `!-/*5     
     5<10<5;
@@ -17,6 +18,7 @@ func TestConditionals(t *testing.T) {
     9<=9;
     `
 
+	// Definisce i token attesi e i loro valori letterali.
 	tests := []struct {
 		expectedType    token.TokenType
 		expectedLiteral string
@@ -59,23 +61,25 @@ func TestConditionals(t *testing.T) {
 		{token.SEMICOLON, ";"},
 	}
 
-	l := New(input) // Initialize a new lexer with the input.
+	l := New(input) // Inizializza un nuovo lexer con l'input.
 
+	// Scorre i test e verifica che il tipo e il valore letterale di ogni token siano corretti.
 	for i, tt := range tests {
 		tok := l.NextToken()
 
 		if tok.Type != tt.expectedType {
-			t.Fatalf("tests[%d] - tokentype wrong. Expected=%q, got=%q", i, tt.expectedType, tok.Type)
+			t.Fatalf("tests[%d] - tipo token errato. Atteso=%q, ottenuto=%q", i, tt.expectedType, tok.Type)
 		}
 
 		if tok.Literal != tt.expectedLiteral {
-			t.Fatalf("tests[%d] - literal wrong. Expected=%q, got=%q", i, tt.expectedLiteral, tok.Literal)
+			t.Fatalf("tests[%d] - valore letterale errato. Atteso=%q, ottenuto=%q", i, tt.expectedLiteral, tok.Literal)
 		}
 	}
 }
 
+// TestNextToken testa il lexer con un input di dichiarazioni let e funzioni.
 func TestNextToken(t *testing.T) {
-	// Complete input string for the lexer to analyze.
+	// Stringa completa di input per il lexer da analizzare.
 	input := `let five = 5;
 			  let ten = 10;
 			  let add = fn(x, y) { 
@@ -84,6 +88,7 @@ func TestNextToken(t *testing.T) {
               let result = add(five, ten);
               `
 
+	// Definisce i token attesi e i loro valori letterali.
 	tests := []struct {
 		expectedType    token.TokenType
 		expectedLiteral string
@@ -126,20 +131,21 @@ func TestNextToken(t *testing.T) {
 		{token.IDENT, "ten"},
 		{token.RPAREN, ")"},
 		{token.SEMICOLON, ";"},
-		{token.EOF, ""}, // End-of-file token, typically has no visible literal
+		{token.EOF, ""}, // Il token di fine file (EOF) solitamente non ha un valore letterale visibile.
 	}
 
-	l := New(input) // Initialize a new lexer with the input.
+	l := New(input) // Inizializza un nuovo lexer con l'input.
 
+	// Scorre i test e verifica che il tipo e il valore letterale di ogni token siano corretti.
 	for i, tt := range tests {
 		tok := l.NextToken()
 
 		if tok.Type != tt.expectedType {
-			t.Fatalf("tests[%d] - tokentype wrong. Expected=%q, got=%q", i, tt.expectedType, tok.Type)
+			t.Fatalf("tests[%d] - tipo token errato. Atteso=%q, ottenuto=%q", i, tt.expectedType, tok.Type)
 		}
 
 		if tok.Literal != tt.expectedLiteral {
-			t.Fatalf("tests[%d] - literal wrong. Expected=%q, got=%q", i, tt.expectedLiteral, tok.Literal)
+			t.Fatalf("tests[%d] - valore letterale errato. Atteso=%q, ottenuto=%q", i, tt.expectedLiteral, tok.Literal)
 		}
 	}
 }
