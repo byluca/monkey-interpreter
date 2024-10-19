@@ -7,49 +7,6 @@ import (
 	"testing"
 )
 
-// TestLetStatements verifica che il parser analizzi correttamente le dichiarazioni let.
-// Controlla che il parser riesca a costruire un AST corretto per dichiarazioni di tipo let.
-func TestLetStatements(t *testing.T) {
-	input := `
-let x = 5;
-let y = 10;
-let foobar = 838383;
-`
-
-	l := lexer.New(input)       // Crea un nuovo lexer con l'input fornito
-	p := New(l)                 // Crea un nuovo parser
-	program := p.ParseProgram() // Analizza il programma
-	checkParserErrors(t, p)     // Verifica se ci sono errori nel parser
-
-	// Se il programma è nil, il test fallisce
-	if program == nil {
-		t.Fatalf("ParseProgram() returned nil")
-	}
-
-	expectedStatements := 3 // Numero atteso di dichiarazioni let
-	if len(program.Statements) != expectedStatements {
-		t.Fatalf("program.Statements non contiene %d dichiarazioni. ottenuto=%d",
-			expectedStatements, len(program.Statements))
-	}
-
-	// Array di identificatori attesi
-	tests := []struct {
-		expectedIdentifier string
-	}{
-		{"x"},
-		{"y"},
-		{"foobar"},
-	}
-
-	// Verifica che ogni dichiarazione let contenga l'identificatore atteso
-	for i, tt := range tests {
-		stmt := program.Statements[i]
-		if !testLetStatement(t, stmt, tt.expectedIdentifier) {
-			return
-		}
-	}
-}
-
 // testLetStatement verifica che una dichiarazione let abbia il nome e il formato corretti.
 func testLetStatement(t *testing.T, s ast.Statement, expectedName string) bool {
 	letStmt, ok := s.(*ast.LetStatement)
@@ -91,40 +48,6 @@ func checkParserErrors(t *testing.T, p *Parser) {
 		t.Errorf("errore del parser: %q", msg)
 	}
 	t.FailNow() // Termina il test immediatamente se ci sono errori
-}
-
-// TestReturnStatements verifica la corretta analisi delle dichiarazioni return.
-func TestReturnStatements(t *testing.T) {
-	input := `
-return 5;
-return 10;
-return add(5,10);
-`
-
-	l := lexer.New(input)       // Crea un nuovo lexer con l'input fornito
-	p := New(l)                 // Crea un nuovo parser
-	program := p.ParseProgram() // Analizza il programma
-	checkParserErrors(t, p)     // Verifica se ci sono errori nel parser
-
-	expectedStatements := 3 // Numero atteso di dichiarazioni return
-	if len(program.Statements) != expectedStatements {
-		t.Fatalf("program.Statements non contiene %d dichiarazioni. ottenuto=%d",
-			expectedStatements, len(program.Statements))
-	}
-
-	// Verifica che ogni dichiarazione return sia corretta
-	for _, stmt := range program.Statements {
-		returnStmt, ok := stmt.(*ast.ReturnStatement)
-		if !ok {
-			t.Errorf("stmt non è *ast.ReturnStatement. ottenuto=%T", stmt)
-			continue
-		}
-
-		// Controlla che il literal del token sia "return"
-		if returnStmt.TokenLiteral() != "return" {
-			t.Errorf("returnStmt.TokenLiteral non è 'return', ottenuto %q", returnStmt.TokenLiteral())
-		}
-	}
 }
 
 // TestIdentifierExpression verifica che il parser possa analizzare espressioni contenenti identificatori.
@@ -553,4 +476,72 @@ func TestCallExpressionParsing(t *testing.T) {
 	testLiteralExpression(t, exp.Arguments[0], 1)
 	testInfixExpression(t, exp.Arguments[1], 2, "*", 3)
 	testInfixExpression(t, exp.Arguments[2], 4, "+", 5)
+}
+
+// TestLetStatements verifica che il parser analizzi correttamente le dichiarazioni let.
+// Controlla che il parser riesca a costruire un AST corretto per dichiarazioni di tipo let.
+func TestLetStatements(t *testing.T) {
+	tests := []struct {
+		input              string
+		expectedIdentifier string
+		expectedValue      interface{}
+	}{
+		{"let x = 5;", "x", 5},
+		{"let y = true;", "y", true},
+		{"let foobar = y;", "foobar", "y"},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		if len(program.Statements) != 1 {
+			t.Fatalf("program.Statements does not contain 1 statement. got=%d",
+				len(program.Statements))
+		}
+
+		stmt := program.Statements[0]
+		if !testLetStatement(t, stmt, tt.expectedIdentifier) {
+			return
+		}
+
+		val := stmt.(*ast.LetStatement).Value
+		if !testLiteralExpression(t, val, tt.expectedValue) {
+			return
+		}
+	}
+}
+
+func TestReturnStatements(t *testing.T) {
+	tests := []struct {
+		input         string
+		expectedValue interface{}
+	}{
+		{"return 5;", 5},
+		{"return true;", true},
+		{"return foobar;", "foobar"},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		if len(program.Statements) != 1 {
+			t.Fatalf("program.Statements does not contain 1 statement. got=%d", len(program.Statements))
+		}
+
+		stmt := program.Statements[0]
+		returnStmt, ok := stmt.(*ast.ReturnStatement)
+		if !ok {
+			t.Fatalf("stmt not *ast.ReturnStatement. got=%T", stmt)
+		}
+
+		if !testLiteralExpression(t, returnStmt.ReturnValue, tt.expectedValue) {
+			return
+		}
+	}
 }

@@ -5,32 +5,50 @@ import (
 	"fmt"
 	"io"
 	"monkey-interpreter/lexer"
-	"monkey-interpreter/token"
+	"monkey-interpreter/parser"
 )
 
-const prompt = ">> "
+const PROMPT = ">> "
 
-// Start avvia il ciclo REPL che legge input dall'utente e restituisce i token generati
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
-
 	for {
-		// Mostra il prompt e attende l'input
-		fmt.Fprintf(out, prompt)
+		fmt.Printf(PROMPT)
 		scanned := scanner.Scan()
-
-		// Se l'input termina, esci dal ciclo
 		if !scanned {
 			return
 		}
-
-		// Leggi la linea di input
 		line := scanner.Text()
-		lexer := lexer.New(line)
-
-		// Scorri i token finché non raggiungi EOF
-		for tok := lexer.NextToken(); tok.Type != token.EOF; tok = lexer.NextToken() {
-			fmt.Fprintf(out, "%+v\n", tok)
+		l := lexer.New(line)        // Creiamo un nuovo lexer
+		p := parser.New(l)          // Creiamo un nuovo parser basato sul lexer
+		program := p.ParseProgram() // Analizziamo l'input
+		if len(p.Errors()) != 0 {   // Controlliamo se ci sono errori
+			printParserErrors(out, p.Errors())
+			continue
 		}
+		io.WriteString(out, program.String()) // Stampiamo l'AST come stringa
+		io.WriteString(out, "\n")
+	}
+}
+
+const MONKEY_FACE = `
+        .--.  .-"     "-.  .--.
+       / .. \/  .-. .-.  \/ .. \
+      | |  '|  /   Y   \  |'  | |
+      | \   \  \0|0/   /   / |
+       \ '- ,\.-"""""""-./, -' /
+        ''-' /_   ^ ^   _\ '-'' 
+           |  \._   _./  |
+           \   \ '~' /   /
+            '._ '-=-' _.'
+               '-----'
+`
+
+func printParserErrors(out io.Writer, errors []string) {
+	io.WriteString(out, MONKEY_FACE) // Stampa la faccia di scimmia
+	io.WriteString(out, "Ops! Abbiamo incontrato un problema con la scimmia!\n")
+	io.WriteString(out, "Errori del parser:\n")
+	for _, msg := range errors {
+		io.WriteString(out, "\t"+msg+"\n")
 	}
 }
