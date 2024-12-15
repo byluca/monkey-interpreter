@@ -1,6 +1,6 @@
-
-
 # 🐒 **Monkey Interpreter**
+
+![Monkey Interpreter](https://github.com/username/repository-name/blob/main/monkeyinterpreter.png)
 
 ## 🎯 **Build an Interpreter with Go**
 Ever wondered how interpreters work? Let's dive into the world of interpreters and build one from scratch with Go! 🚀
@@ -34,4 +34,3 @@ Monkey is a fun and minimalist language with features like:
 
 ### 🚀 **Get Started**
 Ready to build your interpreter? Follow along step-by-step and let’s unleash the magic of interpreters! 🧙‍♂️
-
