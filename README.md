@@ -1,6 +1,6 @@
 # 🐒 **Monkey Interpreter**
 
-![Monkey Interpreter](https://github.com/username/repository-name/blob/main/monkeyinterpreter.png)
+![Monkey Interpreter](https://github.com/byluca/monkey-interpreter/blob/main/monkeyinterpreter.png)
 
 ## 🎯 **Build an Interpreter with Go**
 Ever wondered how interpreters work? Let's dive into the world of interpreters and build one from scratch with Go! 🚀
