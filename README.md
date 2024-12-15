@@ -1,7 +1,7 @@
 # 🐒 **Monkey Interpreter**
 
 <div align="center">
-  <img src="https://github.com/byluca/monkey-interpreter/blob/main/monkeyinterpreter.png" alt="Monkey Interpreter Logo" width="300" height="300">
+  <img src="https://github.com/byluca/monkey-interpreter/blob/main/monkeyinterpreter.png" alt="Monkey Interpreter Logo" width="500" height="500">
 </div>
 
 ---
