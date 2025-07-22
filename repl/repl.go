@@ -6,30 +6,42 @@ import (
 	"io"
 	"monkey-interpreter/lexer"
 	"monkey-interpreter/parser"
+	"monkey-interpreter/evaluator"
 )
 
 const PROMPT = ">> "
 
+
+
+
 func Start(in io.Reader, out io.Writer) {
-	scanner := bufio.NewScanner(in)
-	for {
-		fmt.Printf(PROMPT)
-		scanned := scanner.Scan()
-		if !scanned {
-			return
-		}
-		line := scanner.Text()
-		l := lexer.New(line)        // Creiamo un nuovo lexer
-		p := parser.New(l)          // Creiamo un nuovo parser basato sul lexer
-		program := p.ParseProgram() // Analizziamo l'input
-		if len(p.Errors()) != 0 {   // Controlliamo se ci sono errori
-			printParserErrors(out, p.Errors())
-			continue
-		}
-		io.WriteString(out, program.String()) // Stampiamo l'AST come stringa
-		io.WriteString(out, "\n")
-	}
+scanner := bufio.NewScanner(in)
+for {
+fmt.Printf(PROMPT)
+scanned := scanner.Scan()
+if !scanned {
+return
 }
+line := scanner.Text()
+l := lexer.New(line)
+p := parser.New(l)
+program := p.ParseProgram()
+if len(p.Errors()) != 0 {
+printParserErrors(out, p.Errors())
+continue
+}
+evaluated := evaluator.Eval(program)
+if evaluated != nil {
+io.WriteString(out, evaluated.Inspect())
+io.WriteString(out, "\n")
+}
+}
+}
+
+
+
+
+
 
 const MONKEY_FACE = `
         .--.  .-"     "-.  .--.
@@ -52,3 +64,6 @@ func printParserErrors(out io.Writer, errors []string) {
 		io.WriteString(out, "\t"+msg+"\n")
 	}
 }
+
+
+
