@@ -1,51 +1,51 @@
-# Interprete Monkey in Go
+#  Monkey Interpreter in Go
 
-Questo repository contiene un'implementazione completa del linguaggio di programmazione "Monkey", scritta in Go, basata sul fantastico libro di Thorsten Ball, **"Writing An Interpreter In Go"**.
+This repository contains a complete implementation of the "Monkey" programming language, written in Go, based on Thorsten Ball's book, "**Writing An Interpreter In Go**".
 
-L'obiettivo di questo progetto è esplorare e comprendere i meccanismi interni di un interprete, costruendo ogni componente da zero, senza l'ausilio di librerie o tool di terze parti.
+The goal of this project is to explore and understand the inner workings of an interpreter by building every component from scratch, without using any third-party libraries or tools
 
-## Il Linguaggio Monkey
+## The Monkey Language
 
-Monkey è un linguaggio didattico con una sintassi C-like, progettato per essere semplice ma abbastanza potente da includere funzionalità avanzate. Tra le sue caratteristiche principali troviamo:
-- Sintassi simile al C
-- Variabili (bindings) con `let`
-- Tipi di dati: Interi, Booleani, Stringhe, Array e Hash
-- Espressioni aritmetiche e logiche
-- Funzioni di prima classe e di ordine superiore (Higher-Order Functions)
-- Chiusure (Closures)
-- Un sistema di funzioni predefinite (built-in)
+Monkey is an educational language with a C-like syntax, designed to be simple yet powerful enough to include advanced features. Its key features include:
+- C-like syntax
+- Variable bindings with  `let`
+- Data types: Integers, Booleans
+- Arithmetic and logical expressions
+- First-class and higher-order functions
+- Closures
+- A built-in function system
 
-## Come Funziona: L'Architettura dell'Interprete
+## How It Works: The Interpreter's Architecture
 
-L'interprete è costruito seguendo un'architettura classica a "tree-walking", suddivisa in tre fasi principali:
+The interpreter is built following a classic "tree-walking" architecture, divided into three main stages:
 
 ```
 +----------------+      +----------+      +---------+      +-----------+      +----------+
-| Codice Sorgente|----->|  Lexer   |----->|  Tokens |----->|  Parser   |----->|    AST   |
+| Code Source    |----->|  Lexer   |----->|  Tokens |----->|  Parser   |----->|    AST   |
 +----------------+      +----------+      +---------+      +-----------+      +----------+
                                                                                   |
                                                                                   |
                                                                                   v
                                                                             +----------+
-                                                                            | Risultato|
+                                                                            | Result   |
                                                                             +----------+
                                                                                   ^
                                                                                   |
                                                                                   |
                                                                             +-----------+
-                                                                            | Valutatore|
+                                                                            | Evaluator |
                                                                             +-----------+
 ```
 
-### 1. Lexer (Analisi Lessicale)
-Il **Lexer** è il primo componente che analizza il codice. Legge il testo sorgente carattere per carattere e lo trasforma in una sequenza di "token". Un token è un'unità logica minima del linguaggio, come una parola chiave (`let`, `fn`), un identificatore (`x`), un numero (`123`) o un operatore (`+`).
+### 1. Lexer (Lexical Analysis)
+The **Lexer**  is the first component that analyzes the code. It reads the source code character by character and transforms it into a sequence of "tokens." A token is the smallest logical unit of the language, such as a keyword (`let`, `fn`), an identifier (`x`), a number (`123`) or an operator (`+`).
 
 `let five = 5;`  =>  `[LET, IDENT("five"), ASSIGN, INT("5"), SEMICOLON]`
 
-### 2. Parser (Analisi Sintattica)
-Il **Parser** riceve la sequenza di token dal Lexer e verifica che la loro disposizione segua le regole grammaticali del linguaggio. Se la sintassi è corretta, costruisce una struttura dati ad albero chiamata **Abstract Syntax Tree (AST)**. L'AST rappresenta la struttura gerarchica e logica del programma, ignorando dettagli come spazi bianchi o punti e virgola.
+### 2. Parser (Parsing)
+The **Parser**  receives the sequence of tokens from the Lexer and checks if their arrangement follows the language's grammatical rules. If the syntax is correct, it builds a tree-like data structure called an **Abstract Syntax Tree (AST)**. The AST represents the hierarchical and logical structure of the program, ignoring details like whitespace or semicolons
 
-Per gestire espressioni complesse e la precedenza degli operatori (es. `*` prima di `+`), il parser utilizza l'elegante algoritmo **Pratt Parsing**.
+To handle complex expressions and operator precedence  (es. `*` before of `+`), the parser uses the  **Pratt Parsing** algorithm
 
 ![AST](ast.png)
 
@@ -53,40 +53,40 @@ Per gestire espressioni complesse e la precedenza degli operatori (es. `*` prima
 
 
 
-### 3. Valutatore (Evaluation)
-Il **Valutatore** è il cuore dell'interprete. "Cammina" sull'AST (tree-walking) nodo per nodo e dà un significato (semantica) al programma. Utilizza una funzione ricorsiva, `Eval`, per eseguire le azioni corrispondenti a ogni nodo:
--   **Calcoli**: Esegue operazioni aritmetiche e logiche.
--   **Variabili**: Salva e recupera i valori delle variabili usando una struttura chiamata **Environment**, che agisce come una "memoria" per gli scope.
--   **Controllo di Flusso**: Gestisce le condizioni `if/else` e le istruzioni `return`.
--   **Funzioni**: Crea oggetti funzione, gestisce le chiamate e, grazie all'Environment, supporta le chiusure.
+### 3. Evaluator (Evaluation)
+The **Evaluator** is the heart of the interpreter. It "walks" the AST (tree-walking) node by node and gives meaning (semantics) to the program. It uses a recursive function, `Eval`, to perform the actions corresponding to each node::
+-   **Computations**: Executes arithmetic and logical operations
+-   **Variables**: Saves and retrieves variable values using a structure called an **Environment**, which acts as a "memory" for scopes
+-   **Flow Control**: Handles `if/else`  conditions and  `return` statements
+-   **Functions**: Creates function objects, handles calls, and, thanks to the Environment, supports closures
 
-Il risultato finale della valutazione è un "oggetto" interno che rappresenta il valore calcolato.
+The final result of the evaluation is an internal "object" that represents the computed value.
 
-## Struttura del Repository
+## Repository Structure
 
-Il codice è organizzato in pacchetti, ognuno con una responsabilità specifica:
--   `main.go`: Il punto di ingresso del programma che avvia il REPL.
--   `/ast`: Contiene le definizioni delle strutture dati per i nodi dell'Abstract Syntax Tree.
--   `/lexer`: Il tokenizzatore che trasforma il codice sorgente in token.
--   `/parser`: L'analizzatore sintattico che costruisce l'AST a partire dai token.
--   `/evaluator`: Il valutatore che esegue il codice camminando sull'AST.
--   `/object`: Definisce il sistema di oggetti interni per rappresentare i valori (interi, booleani, funzioni, ecc.) durante la valutazione.
--   `/token`: Definisce i tipi di token usati dal Lexer e dal Parser.
--   `/repl`: Implementa il ciclo Read-Eval-Print Loop, l'interfaccia interattiva da riga di comando.
+The code is organized into packages, each with a specific responsibility:
+-   `main.go`: The entry point of the program that starts the REPL.
+-   `/ast`: Contains the data structure definitions for the Abstract Syntax Tree nodes.
+-   `/lexer`: The tokenizer that transforms source code into tokens.
+-   `/parser`: The parser that builds the AST from tokens.
+-   `/evaluator`: The evaluator that executes the code by walking the AST.
+-   `/object`: Defines the internal object system to represent values (integers, booleans, functions, etc.) during evaluation
+-   `/token`: Defines the token types used by the Lexer and Parser.
+-   `/repl`: Implements the Read-Eval-Print Loop, the interactive command-line interface.
 
-## Come Eseguirlo
+## How to Run It
 
-Per avviare l'interprete in modalità interattiva (REPL), è sufficiente avere Go installato ed eseguire:
+To start the interpreter in interactive mode (REPL), you just need to have Go installed and run:
 ```sh
 go run main.go
 ```
-Apparirà un prompt `>>` dove potrai scrivere codice Monkey.
+A `>>` prompt will appear where you can write Monkey code.
 
-## Esempi di Codice Monkey
+## Monkey Code Examples
 
-Ecco alcuni esempi di ciò che il linguaggio Monkey può fare:
+Here are some examples of what the Monkey language can do:
 
-#### Variabili e Operazioni
+#### Variables and Operations
 ```monkey
 >> let x = 10;
 >> let y = x * 2;
@@ -94,7 +94,7 @@ Ecco alcuni esempi di ciò che il linguaggio Monkey può fare:
 5
 ```
 
-#### Funzioni e Chiusure (Closures)
+#### Functions and Closures
 ```monkey
 >> let newAdder = fn(x) { fn(y) { x + y }; };
 >> let addTwo = newAdder(2);
@@ -102,7 +102,7 @@ Ecco alcuni esempi di ciò che il linguaggio Monkey può fare:
 5
 ```
 
-#### Funzioni di Ordine Superiore
+#### Higher-Order Functions
 ```monkey
 >> let twice = fn(f, x) { f(f(x)); };
 >> let addThree = fn(x) { x + 3; };
@@ -111,6 +111,4 @@ Ecco alcuni esempi di ciò che il linguaggio Monkey può fare:
 ```
 
 
-## Riconoscimenti
 
-Questo progetto è un'implementazione diretta del lavoro descritto nel libro **"Writing An Interpreter In Go"** di **Thorsten Ball**. Tutti i concetti e il design sono merito suo.
